@@ -1,0 +1,177 @@
+
+import random
+import pickle
+
+class GameStatus():
+    def __init__(self, name):
+        self.tie = 0
+        self.playerwin = 0
+        self.pcwin = 0
+        self.name = name
+
+    def get_round(self):
+        return self.tie + self.playerwin + self.pcwin + 1
+
+
+
+def welcomemenu():
+    
+    while True:
+        print ("1: Start New Game")
+        print ("2: Load Game")
+        print ("3: Quit")
+        print ("")
+        select = int(input("Enter choice: "))
+        if select in [1, 2, 3]:
+            break
+        else:
+            print ("Wrong choice. select again.")
+
+    if select == 1:
+        name = input("What is your name?: ") 
+        print ("Hello %s." % name)
+        print ("Let's play!")
+        game_status = GameStatus(name) 
+    elif select == 2:
+        while True:
+            name = input("What is your name?: ")
+            try:
+                player_file = open("%s.txt" % name,'rb')
+            except IOError:
+                print("There's no saved file with name %s" % name)
+                continue
+            break
+        print("Welcome back %s." % name)
+        print("Let's play!")
+
+        game_status = pickle.load(player_file) 
+
+        displayScoreBoard(game_status)
+        player_file.close()
+
+    elif menuselect == 3:
+        exit()
+        return
+    return game_status
+
+
+
+def play(game_status):
+    playerChoice = int(playerMenu())
+    
+    pcChoice = pcGenerate()
+    outcome = evaluateGame(playerChoice, pcChoice)
+    updatescoreboard(outcome, game_status)
+
+
+
+
+def playerMenu():
+    print("Select a choice: \n [1]: Rock \n [2]: Paper \n [3]: Scissors\n")
+    menuSelect = int(input("What will it be? "))
+    while not validateInput(menuSelect):
+        invalidChoice(menuSelect) 
+        menuSelect = int(input("Enter a correct value: "))
+    return menuSelect
+
+
+
+def validateInput(menuSelection):
+    if menuSelection in [1, 2, 3]:
+        return True
+    else:
+        return False
+
+
+def pcGenerate():
+    pcChoice = random.randint(1,3)
+    return pcChoice
+
+
+
+def evaluateGame(playerChoice, pcChoice):
+    
+    rsp = ['rock', 'paper', 'scissors']
+    win_statement  = ['Rock breaks scissors', 'Paper covers rock', 'Scissors cut paper']
+    
+    win_status = (playerChoice - pcChoice) % 3
+    print ("You have chosen %s" % rsp[playerChoice - 1])
+    what_to_say = "Computer has chose %s" % rsp[pcChoice - 1] 
+    if win_status == 0:
+        what_to_say += (" as Well. TIE!")
+    if win_status == 1:
+        what_to_say += (". %s. You WIN!" % win_statement[playerChoice - 1])
+    else:
+        what_to_say += (". %s. You LOSE!" % win_statement[pcChoice - 1])
+    print (what_to_say)
+    return win_status
+
+
+
+
+def updatescoreboard(outcome, game_status):
+    if outcome == 0:
+        game_status.tie += 1
+    elif outcome == 1:
+        game_status.playerwin += 1
+    else:
+        game_status.pcwin += 1
+
+
+def invalidChoice(menuSelect):
+    print (menuSelect,"is not a valid option. Please use 1-3")
+
+
+
+def displayScoreBoard(game_status):
+    print ("")
+    print ("Statistics:")
+    print ("Ties: %d" % game_status.tie)
+    print ("Player Wins: %d" % game_status.playerwin)
+    print ("Computer Wins: %d" % game_status.pcwin) 
+    if game_status.pcwin > 0:
+
+ 
+        print ("Win/Loss Ratio: %f" % (float(game_status.playerwin) / game_status.pcwin)) 
+    else:
+        print ("Win/Loss Ratio: you always win.")
+    print ("Rounds: %d" % game_status.get_round())
+
+def endGameSelect(game_status):
+    print ("")
+    print ("[1]: Play Again")
+    print ("[2]: View Statistics")
+    print ("[3]: Save Game")
+    print ("[4]: Quit")
+    print ("")
+    while True:
+        menuselect = int(input("Enter choice: "))
+        if menuselect in [1, 2, 3, 4]:
+            break
+        else:
+            print ("Wrong input.")
+
+    if menuselect == 2:
+        displayScoreBoard(game_status)
+        endGameSelect(game_status)
+    elif menuselect == 3:
+        f = open("%s.txt" % game_status.name, 'wb')
+        pickle.dump(game_status, f)
+        f.close()
+        print ("Saved.")
+        endGameSelect(game_status)
+    elif menuselect == 4:
+        exit()
+
+
+def main():
+    print("Welcome to Rock, Paper, Scissors!")
+    print("")
+    game_status = welcomemenu()
+    while True:
+        play(game_status)
+        endGameSelect(game_status)
+
+if __name__ == '__main__':
+    main()
+
